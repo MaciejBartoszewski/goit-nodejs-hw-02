@@ -1,4 +1,3 @@
-const Joi = require("joi");
 const {
   listContacts,
   getContactById,
@@ -8,10 +7,15 @@ const {
   updateStatusContact,
 } = require("./contacts.service");
 
+const {
+  createContactSchema,
+  updateContactSchema,
+} = require("./contact.validators");
+
 const listContactsHandler = async (req, res, next) => {
   try {
     const contacts = await listContacts();
-    return res.json(contacts);
+    res.json(contacts);
   } catch (error) {
     next(error);
   }
@@ -35,18 +39,12 @@ const removeContactHandler = async (req, res, next) => {
     if (contact) {
       return res.status(200).json({ message: "contact deleted" });
     } else {
-      return res.status(404).json({ message: "Not found" });
+      res.status(404).json({ message: "Not found" });
     }
   } catch (error) {
     next(error);
   }
 };
-
-const createContactSchema = Joi.object({
-  name: Joi.string().required(),
-  email: Joi.string().email().required(),
-  phone: Joi.string().required(),
-});
 
 const addContactHandler = async (req, res, next) => {
   try {
@@ -61,11 +59,6 @@ const addContactHandler = async (req, res, next) => {
   }
 };
 
-const updateContactSchema = Joi.object({
-  name: Joi.string(),
-  email: Joi.string().email(),
-  phone: Joi.string(),
-});
 const updateContactHandler = async (req, res, next) => {
   try {
     const { error } = updateContactSchema.validate(req.body);
@@ -76,7 +69,7 @@ const updateContactHandler = async (req, res, next) => {
     if (updatedContact) {
       return res.status(200).json(updatedContact);
     } else {
-      return res.status(404).json({ message: "Not found" });
+      res.status(404).json({ message: "Not found" });
     }
   } catch (error) {
     next(error);
@@ -85,14 +78,14 @@ const updateContactHandler = async (req, res, next) => {
 
 const updateStatusContactHandler = async (req, res, next) => {
   try {
-    const updatedStatusContact = await updateStatusContact(
-      req.params.contactId,
-      req.body
-    );
+    const { contactId } = req.params;
+    const { body } = req;
+
+    const updatedStatusContact = await updateStatusContact(contactId, body);
     if (updatedStatusContact) {
       return res.status(200).json(updatedStatusContact);
     } else {
-      return res.status(404).json({ message: "Not found" });
+      res.status(404).json({ message: "Not found" });
     }
   } catch (error) {
     next(error);

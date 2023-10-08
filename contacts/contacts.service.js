@@ -6,7 +6,7 @@ const listContacts = async () => {
     return contacts;
   } catch (e) {
     console.error(e.message);
-    return [];
+    return "error contact list";
   }
 };
 
@@ -15,7 +15,7 @@ const getContactById = async (id) => {
     return await Contact.findById(id);
   } catch (e) {
     console.error(e.message);
-    return null;
+    return "error get contact by id";
   }
 };
 
@@ -24,7 +24,7 @@ const removeContact = async (id) => {
     return await Contact.findByIdAndDelete(id);
   } catch (e) {
     console.error(e.message);
-    return null;
+    return "error remove contact";
   }
 };
 
@@ -35,7 +35,7 @@ const addContact = async (contact) => {
     return savedContact;
   } catch (e) {
     console.error(e.message);
-    return null;
+    return "error save contact";
   }
 };
 
@@ -44,7 +44,7 @@ const updateContact = async (id, modifiedContact) => {
     return await Contact.findByIdAndUpdate(id, modifiedContact, { new: true });
   } catch (e) {
     console.error(e.message);
-    return null;
+    return "error update contact";
   }
 };
 
@@ -53,7 +53,7 @@ const updateStatusContact = async (id, modifiedContact) => {
     return await Contact.findByIdAndUpdate(id, modifiedContact, { new: true });
   } catch (e) {
     console.error(e.message);
-    return null;
+    return "error status";
   }
 };
 
