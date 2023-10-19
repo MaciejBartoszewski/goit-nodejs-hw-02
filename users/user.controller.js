@@ -1,5 +1,10 @@
 const userDao = require("./user.dao");
 const authService = require("../auth/auth.service");
+const fs = require("fs/promises");
+const path = require("path");
+const jimp = require("jimp");
+const mimetypes = require("mime-types");
+const avatarDir = path.dirname(require.main.filename);
 
 const signupHandler = async (req, res, next) => {
   try {
@@ -69,9 +74,32 @@ const currentHandler = async (req, res, next) => {
   }
 };
 
+const avatarHandler = async (req, res, next) => {
+  try {
+    const { email } = req.user;
+    const filename = `${email}_${Date.now()}.${mimetypes.extension(
+      req.file.mimetype
+    )}`;
+    const avatarImage = await jimp.read(req.file.path);
+    await avatarImage.resize(250, 250).writeAsync(req.file.path);
+    await fs.rename(
+      req.file.path,
+      path.join(avatarDir, "public/avatars", filename)
+    );
+    const updatedUser = await userDao.updateUser(email, {
+      avatarURL: `http://localhost:3000/avatars/${filename}`,
+    });
+
+    res.status(200).send({ avatarURL: updatedUser.avatarURL });
+  } catch (e) {
+    return next(e);
+  }
+};
+
 module.exports = {
   signupHandler,
   loginHandler,
   logoutHandler,
   currentHandler,
+  avatarHandler,
 };
