@@ -5,6 +5,7 @@ const path = require("path");
 const jimp = require("jimp");
 const mimetypes = require("mime-types");
 const avatarDir = path.dirname(require.main.filename);
+const { sendUserVerificationMail } = require("./user-mailer.service");
 
 const signupHandler = async (req, res, next) => {
   try {
@@ -96,10 +97,58 @@ const avatarHandler = async (req, res, next) => {
   }
 };
 
+const verifyHandler = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await userDao.getUser({ verificationToken });
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    if (user.verify) {
+      return res.status(400).send({ message: "User is already verified. " });
+    }
+
+    await userDao.updateUser(user.email, {
+      verify: true,
+      verificationToken: null,
+    });
+
+    return res.status(200).send({ message: "Verification successful" });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+const resendVerificationHandler = async (req, res, next) => {
+  try {
+    const user = await userDao.getUser({ email: req.body.email });
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    if (user.verify) {
+      return res
+        .status(400)
+        .send({ message: "Verification has already been passed" });
+    }
+
+    await sendUserVerificationMail(user.email, user.verificationToken);
+
+    return res.status(204).send({ message: "Verification email sent" });
+  } catch (e) {
+    return next(e);
+  }
+};
+
 module.exports = {
   signupHandler,
   loginHandler,
   logoutHandler,
   currentHandler,
   avatarHandler,
+  verifyHandler,
+  resendVerificationHandler,
 };
