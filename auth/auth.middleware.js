@@ -20,6 +20,12 @@ const authMiddleware = async (req, res, next) => {
       throw new Error("Not authorized");
     }
 
+    if (!userEntity.verify) {
+      throw new Error(
+        "User is not verified. Please verify user by link you've recieved by email."
+      );
+    }
+
     req.user = userEntity;
     return next();
   } catch (e) {

@@ -7,6 +7,7 @@ const avatar = {
   password: "avatar",
   email: "avatar@test.com",
   subscription: "pro",
+  verify: true,
 };
 jest.mock("./user.dao", () => ({
   createUser: jest.fn().mockResolvedValue(avatar),
